@@ -3,7 +3,21 @@ import {loadTrack,saveTrack,deleteTrack} from './storage.js';
 const $=id=>document.getElementById(id);let map,layer;let busy=false;
 function status(text){$('status').textContent=text;}
 function reset(){if(layer)layer.clearLayers();for(const id of ['points','segments','routes'])$(id).textContent='0';$('creator').textContent='Not supplied';$('digest').textContent='No file imported';$('provenance').textContent='Import a historical GPX. Planning disconnected.';$('fit').disabled=true;$('delete').disabled=true;}
-function render(data){layer.clearLayers();for(const part of data.components)L.polyline(part.points,{color:'#d0ac75',weight:4,smoothFactor:0,noClip:true}).addTo(layer);for(const [id,value] of Object.entries({creator:data.creator||'Not supplied',points:data.pointCount.toLocaleString('en-US'),segments:data.segmentCount,routes:data.routeCount,digest:data.digest}))$(id).textContent=value;$('provenance').textContent=data.creator==='COROS Wearables'&&data.routeCount===0?'Historical observed COROS track — visualization only. Not an Adventure AI-generated route or an M1–M19 verified plan.':'Supplied historical GPX — source identity unverified. Not an Adventure AI-generated route or an M1–M19 verified plan.';$('fit').disabled=false;$('delete').disabled=false;map.fitBounds(layer.getBounds());}
+function drawHistoricalTrack(components){
+ // Draw the complete halo pass first so dense crossings retain a crisp center.
+ // Every pass uses the same unsimplified component points; no segment connectors.
+ const strokes=[
+  {className:'historical-track-halo',color:'#168dff',weight:10,opacity:0.18},
+  {className:'historical-track-main',color:'#24bfff',weight:4,opacity:1},
+  {className:'historical-track-highlight',color:'#c0efff',weight:1.25,opacity:0.85}
+ ];
+ for(const stroke of strokes)for(const part of components)L.polyline(part.points,{...stroke,smoothFactor:0,noClip:true,interactive:false,lineCap:'round',lineJoin:'round'}).addTo(layer);
+ for(const part of components){
+  L.circleMarker(part.points[0],{className:'historical-track-start',radius:4,color:'#c0efff',weight:1.5,fillColor:'#127bc3',fillOpacity:1,interactive:false}).addTo(layer);
+  L.circleMarker(part.points[part.points.length-1],{className:'historical-track-finish',radius:5,color:'#c0efff',weight:1.5,fillColor:'#101c19',fillOpacity:1,interactive:false}).addTo(layer);
+ }
+}
+function render(data){layer.clearLayers();drawHistoricalTrack(data.components);for(const [id,value] of Object.entries({creator:data.creator||'Not supplied',points:data.pointCount.toLocaleString('en-US'),segments:data.segmentCount,routes:data.routeCount,digest:data.digest}))$(id).textContent=value;$('provenance').textContent=data.creator==='COROS Wearables'&&data.routeCount===0?'Historical observed COROS track — visualization only. Not an Adventure AI-generated route or an M1–M19 verified plan.':'Supplied historical GPX — source identity unverified. Not an Adventure AI-generated route or an M1–M19 verified plan.';$('fit').disabled=false;$('delete').disabled=false;map.fitBounds(layer.getBounds());}
 async function importBytes(bytes){const data=await parseGPX(bytes);render(data);try{await saveTrack(bytes);status('Track saved locally. Retain the original GPX for recovery.');if(navigator.storage?.persist)await navigator.storage.persist().catch(()=>false);}catch{status('Track visible but local saving failed. Reimport after relaunch; an older saved track may remain.');}}
 try{map=L.map('map',{zoomAnimation:false}).setView([0,0],2);layer=L.featureGroup().addTo(map);L.control.attribution().addAttribution('No basemap configured · historical GPX only');$('fit').addEventListener('click',()=>{if(layer.getLayers().length)map.fitBounds(layer.getBounds());});new ResizeObserver(()=>{document.documentElement.style.setProperty('--header-height',$('header').offsetHeight+'px');map.invalidateSize();}).observe($('header'));
  $('file').addEventListener('change',async()=>{if(busy)return;const f=$('file').files[0];if(!f)return;busy=true;$('file').disabled=true;$('delete').disabled=true;try{if(f.size>MAX_BYTES)throw Error('GPX exceeds the 25 MB limit.');await importBytes(await f.arrayBuffer());}catch(error){status('Import rejected: '+error.message);}finally{busy=false;$('file').disabled=false;$('delete').disabled=!layer.getLayers().length;$('file').value='';}});
