@@ -1,1 +1,40 @@
-:root{color-scheme:dark;--ink:#edf2e7;--bronze:#d0ac75;--blue:#88cfe5}*{box-sizing:border-box}body{margin:0;background:#101c19;color:var(--ink);font:14px system-ui,-apple-system,sans-serif}#map{position:fixed;inset:0;background:#24352f;height:100dvh}#header{position:fixed;z-index:1000;inset:0 0 auto;padding:calc(10px + env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 10px max(14px,env(safe-area-inset-left));background:#101c19;border-bottom:1px solid #d0ac7566}.brand{display:flex;justify-content:space-between;align-items:center;gap:10px}h1{margin:2px 0;font-size:20px}small,.badge{font-size:10px;color:var(--bronze)}p{margin:6px 0;line-height:1.4;font-size:12px}button,.import,summary{min-height:48px;padding:10px 12px;border-radius:9px}button,.import{border:1px solid var(--bronze);background:#17382e;color:var(--ink);font:inherit;cursor:pointer}.import{display:inline-flex;align-items:center;gap:8px}input{max-width:190px;font:inherit}button:disabled{opacity:.55;cursor:default}button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}#status,#install{color:var(--bronze)}#mission{position:fixed;z-index:1000;bottom:calc(28px + env(safe-area-inset-bottom));left:max(14px,env(safe-area-inset-left));width:min(340px,calc(100vw - 28px));background:#101c19;border:1px solid #d0ac7570;border-radius:12px;overflow:hidden}summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none}summary::-webkit-details-marker{display:none}summary>span:first-child{flex:1}summary small{display:block}summary .badge{flex:none}.panel{padding:0 14px 14px;max-height:30dvh;overflow:auto}dt{color:#c1cbbf}dd{margin:0 0 8px;overflow-wrap:anywhere}code{display:block;overflow-wrap:anywhere;color:var(--ink);font-size:11px}.leaflet-top{top:var(--header-height,230px)}.leaflet-control-zoom a{min-width:44px;min-height:44px;line-height:44px!important}.leaflet-bottom{padding-bottom:env(safe-area-inset-bottom)}.leaflet-control-attribution{background:#fffffff0!important;color:#18372d!important}noscript{position:fixed;z-index:2000;background:#101c19;padding:20px}@media(orientation:landscape) and (max-height:550px){#header{right:auto;width:290px}.leaflet-top{top:10px;left:300px}#mission{width:260px}.panel{max-height:25dvh}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+/* Expedition Cartography V1: a neutral canvas, never simulated terrain. */
+:root{color-scheme:dark;--ink:#edf1f6;--muted:#bdc9d8;--bronze:#c7a16a;--blue:#88cfe5;--map-canvas:#07111e;--panel:#0a1524;--control:#101f31;--border:#c7a16a66}
+*{box-sizing:border-box}
+body{margin:0;background:var(--map-canvas);color:var(--ink);font:14px system-ui,-apple-system,sans-serif}
+#map{position:fixed;inset:0;height:100dvh}
+#map,.leaflet-container{background:var(--map-canvas)}
+#header{position:fixed;z-index:1000;inset:0 0 auto;padding:calc(10px + env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 10px max(14px,env(safe-area-inset-left));background:var(--panel);border-bottom:1px solid var(--border)}
+.brand{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{margin:2px 0;font-size:20px;color:var(--bronze)}
+small,.badge{font-size:10px;color:var(--bronze)}
+p{margin:6px 0;line-height:1.4;font-size:12px}
+button,.import,summary{min-height:48px;padding:10px 12px;border-radius:9px}
+button,.import{border:1px solid var(--bronze);background:var(--control);color:var(--ink);font:inherit;cursor:pointer}
+.import{display:flex;align-items:center;gap:8px;width:min(100%,340px)}
+input{min-width:0;width:100%;max-width:210px;flex:1;font:inherit;color:var(--ink)}
+input::file-selector-button{padding:6px 8px;min-height:32px;border:1px solid var(--border);border-radius:5px;background:var(--panel);color:var(--ink);font:inherit;cursor:pointer}
+button:disabled{opacity:.55;cursor:default}
+button:focus-visible,summary:focus-visible,input:focus-visible,.leaflet-bar a:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+#status,#install{color:var(--bronze)}
+#mission{position:fixed;z-index:1000;bottom:calc(28px + env(safe-area-inset-bottom));left:max(14px,env(safe-area-inset-left));width:min(340px,calc(100vw - 28px));background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary>span:first-child{flex:1}
+summary small{display:block}
+summary .badge{flex:none}
+.panel{padding:0 14px 14px;max-height:30dvh;overflow:auto}
+dt{color:var(--muted)}
+dd{margin:0 0 8px;overflow-wrap:anywhere}
+code{display:block;overflow-wrap:anywhere;color:var(--ink);font-size:11px}
+.leaflet-top{top:var(--header-height,230px)}
+.leaflet-bar{border:1px solid var(--bronze)!important;box-shadow:0 2px 8px #0005}
+.leaflet-control-zoom a{min-width:48px;min-height:48px;line-height:48px!important;background:var(--control);color:var(--bronze);border-bottom-color:var(--border)}
+.leaflet-control-zoom a:hover,.leaflet-control-zoom a:focus{background:var(--panel);color:var(--ink)}
+.leaflet-control-zoom a.leaflet-disabled{background:var(--panel);color:var(--muted)}
+.leaflet-bottom{padding-bottom:env(safe-area-inset-bottom)}
+.leaflet-control-attribution{background:var(--panel)!important;color:var(--muted)!important}
+.leaflet-control-attribution a{color:var(--bronze)}
+noscript{position:fixed;z-index:2000;background:var(--panel);padding:20px}
+@media(orientation:landscape) and (max-height:550px){#header{right:auto;width:290px;max-height:calc(100dvh - 108px - env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain}.leaflet-top{top:10px;left:300px}#mission{width:260px}.panel{max-height:25dvh}body:has(#mission[open]) #header{max-height:calc(75dvh - 112px - env(safe-area-inset-bottom))}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
