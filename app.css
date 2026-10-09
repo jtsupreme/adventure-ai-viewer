@@ -23,7 +23,9 @@ summary::-webkit-details-marker{display:none}
 summary>span:first-child{flex:1}
 summary small{display:block}
 summary .badge{flex:none}
+#mission summary:focus-visible{outline-offset:-3px}
 .panel{padding:0 14px 14px;max-height:30dvh;overflow:auto}
+.panel p{font-size:13px}
 dt{color:var(--muted)}
 dd{margin:0 0 8px;overflow-wrap:anywhere}
 code{display:block;overflow-wrap:anywhere;color:var(--ink);font-size:11px}
