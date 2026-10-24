@@ -1,5 +1,5 @@
 'use strict';
-const VERSION='foundation-8-geographic-39b';
+const VERSION='foundation-9-location-40b';
 const PREFIX='adventure-ai-shell:'+self.registration.scope;
 const CACHE=PREFIX+VERSION;
 const ASSETS=['./','index.html','app.css','app.js','gpx.js','storage.js','manifest.webmanifest','assets/install-icon.png','assets/install-icon-512.png','vendor/leaflet/leaflet.js','vendor/leaflet/leaflet.css','vendor/leaflet/images/layers.png','vendor/leaflet/images/layers-2x.png','vendor/leaflet/images/marker-icon.png','vendor/leaflet/images/marker-icon-2x.png','vendor/leaflet/images/marker-shadow.png','terrain/index.html','terrain/app.js','terrain/style.css','terrain/catalog.json','terrain/pack-manifest.json'];
