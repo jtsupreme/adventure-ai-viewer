@@ -1,5 +1,5 @@
 'use strict';
-const VERSION='foundation-6-terrain-38n';
+const VERSION='foundation-7-recovery-38o';
 const PREFIX='adventure-ai-shell:'+self.registration.scope;
 const CACHE=PREFIX+VERSION;
 const ASSETS=['./','index.html','app.css','app.js','gpx.js','storage.js','manifest.webmanifest','assets/install-icon.png','assets/install-icon-512.png','vendor/leaflet/leaflet.js','vendor/leaflet/leaflet.css','vendor/leaflet/images/layers.png','vendor/leaflet/images/layers-2x.png','vendor/leaflet/images/marker-icon.png','vendor/leaflet/images/marker-icon-2x.png','vendor/leaflet/images/marker-shadow.png','terrain/index.html','terrain/app.js','terrain/style.css','terrain/catalog.json','terrain/pack-manifest.json'];
@@ -66,6 +66,8 @@ self.addEventListener('message',event=>{
  if(type==='ACTIVATE'){
   if(!trusted)return;
   event.waitUntil((async()=>{
+   let requestedClient=false,activated=false;
+   try{
    // Activation would reload the unchanged historical page. Require a single window
    // and never interrupt a pack operation in the active worker or another client.
    const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
@@ -83,7 +85,17 @@ self.addEventListener('message',event=>{
      if(!keys.includes(PREFIX+'foundation-5')||keys.some(k=>k.startsWith(TERRAIN_PREFIX)))return;
     }
    }
-   await self.skipWaiting();
+   // Ask the actual requesting document to reserve its GPX controls. A legacy
+   // or unresponsive page cannot prove readiness, so forced activation defers.
+   requestedClient=true;
+   const clientReady=await new Promise(resolve=>{const channel=new MessageChannel();const timer=setTimeout(()=>{channel.port1.close();resolve(false);},2000);channel.port1.onmessage=e=>{clearTimeout(timer);channel.port1.close();resolve(e.data?.ready===true);};source.postMessage({type:'UPDATE_READINESS'},[channel.port2]);});
+   if(!clientReady)return;
+   // The idle handshake is asynchronous. Fail closed if the requester closed
+   // or another client appeared after the first snapshot.
+   const finalWindows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+   if(finalWindows.length!==1||finalWindows[0].id!==source.id)return;
+   await self.skipWaiting();activated=true;
+   }finally{if(requestedClient&&!activated){try{source.postMessage({type:'UPDATE_CANCEL'});}catch{/* Closed client has no reservation to release. */}}}
   })());return;
  }
  if(type==='TERRAIN_IDLE'&&event.ports?.[0]){event.ports[0].postMessage({idle:!terrainBusy});return;}
