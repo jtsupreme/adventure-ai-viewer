@@ -25,11 +25,21 @@
   await navigator.serviceWorker.ready;
   if(!navigator.serviceWorker.controller)throw new Error('Application shell not controlling this page. Return to Historical Viewer first');
   const response=await fetch('pack-manifest.json');if(!response.ok)throw new Error('Shell manifest missing');manifest=await response.json();const [w,s,e,n]=manifest.bounds_wgs84;const bounds=L.latLngBounds([s,w],[n,e]);
-  map=L.map('map',{zoomAnimation:false,fadeAnimation:false,minZoom:8,maxZoom:13});map.attributionControl.setPrefix('Leaflet 1.9.4');const addresses=new Set(manifest.tiles.map(t=>`${t.z}/${t.x}/${t.y}`));
+  map=L.map('map',{crs:L.CRS.EPSG3857,zoomAnimation:false,fadeAnimation:false,minZoom:8,maxZoom:13});map.attributionControl.setPrefix('Leaflet 1.9.4');const addresses=new Set(manifest.tiles.map(t=>`${t.z}/${t.x}/${t.y}`));
   const Terrain=L.TileLayer.extend({createTile(coords,done){if(!addresses.has(`${coords.z}/${coords.x}/${coords.y}`)){const blank=document.createElement('canvas');blank.width=blank.height=256;setTimeout(()=>done(null,blank),0);return blank;}return L.TileLayer.prototype.createTile.call(this,coords,done);}});
   terrain=new Terrain('tiles/{z}/{x}/{y}.png',{tileSize:256,noWrap:true,tms:false,minZoom:8,maxZoom:13,minNativeZoom:10,maxNativeZoom:13,keepBuffer:1,attribution:'USGS 3DEP · experimental'});
   terrain.on('tileerror',()=>{if(map.hasLayer(terrain))map.removeLayer(terrain);$('status').textContent='Terrain pack missing or incomplete. No substitute geography shown.';document.documentElement.dataset.pack='missing';});
   new ResizeObserver(()=>map.invalidateSize({pan:false})).observe($('map'));
+  L.control.scale({imperial:false,maxWidth:100,position:'bottomleft'}).addTo(map);
+  function inspectCentre(){
+   const centre=map.getCenter(),zoom=map.getZoom(),decimals=zoom>=12?4:3;
+   $('centre-lat').textContent=centre.lat.toFixed(decimals);$('centre-lon').textContent=centre.lng.toFixed(decimals);$('centre-zoom').textContent=String(zoom);
+   if(!bounds.contains(centre)){$('centre-coverage').textContent='Map centre outside Mount Rogers DEM extent; no local terrain coverage.';return;}
+   const nativeZoom=Math.max(10,Math.min(13,zoom)),pixel=map.project(centre,nativeZoom),x=Math.floor(pixel.x/256),y=Math.floor(pixel.y/256);
+   const tile=manifest.tiles.find(t=>t.z===nativeZoom&&t.x===x&&t.y===y);
+   $('centre-coverage').textContent=tile?.coverage==='fully_valid'?'Declared tile coverage: fully supported. Offline pack status is separate.':tile?.coverage==='partial'?'Map centre lies in a partially supported tile; DEM coverage at this point is not confirmed. Offline pack status is separate.':'No supported tile declared at map centre.';
+  }
+  map.on('moveend zoomend',inspectCentre);
   const fit=()=>map.fitBounds(bounds,{padding:[12,12],maxZoom:13,animate:false});fit();$('fit').disabled=false;$('fit').addEventListener('click',fit);
   $('terrain-toggle').addEventListener('click',async()=>{wanted=!wanted;$('terrain-toggle').setAttribute('aria-pressed',String(wanted));$('terrain-toggle').textContent=`Terrain: ${wanted?'on':'off'}`;show(lastState);});
   $('install').textContent=`Install offline terrain (${(manifest.total_bytes/1048576).toFixed(2)} MiB)`;
